@@ -26,12 +26,6 @@ public class Rospatent : ICheckParticipant {
         }
         return instance;
     }
-    public void SendNotification(Client client) {
-
-    }
-    public void SendCheck(Client client, uint summ) {
-
-    }
     internal Check<Application> RegisterApplication(Application application, Client client) {
         applications.Append(application);  
 
@@ -40,15 +34,22 @@ public class Rospatent : ICheckParticipant {
         return check;
     }
 
-    private void AllocatePeopleForFirstExpertise(Application application) {
-        Expertise expertise = new Expertise(application.client, application);    
+    internal void AllocatePeopleForFirstExpertise(Application application) {
+        Expertise expertise = new Expertise(application.client, application); 
         var availableExperts = GetFreeExpert(1);
 
         if (availableExperts != null) {
             expertise.LaunchFirstExpertise(availableExperts[0]);
         } else expertise.PostponeExpertise();   
     }
-    
+
+    internal void AllocatePeopleForSecondExpertise(Expertise expertise) {        
+        var availableExperts = GetFreeExpert(3);
+
+        if (availableExperts != null && availableExperts.Count == 3) {
+            expertise.LaunchSecondExpertise(availableExperts);
+        } else expertise.PostponeExpertise();   
+    }    
     private List<Expert>? GetFreeExpert(ulong number) {
         if (experts == null) return null;
 
@@ -56,13 +57,12 @@ public class Rospatent : ICheckParticipant {
 
         for (int i = 0; i < experts.Count; i++) {
             var expert = experts[i];
-            bool isAvailable = (expert.expertises == null || expert.expertises.All(item => 
-                                                item.expertiseStatus != ExpertiseStatus.FirstExpertise &&
-                                                item.expertiseStatus != ExpertiseStatus.SecondExpertise &&
-                                                item.expertiseStatus != ExpertiseStatus.InThePlans));
-            if (isAvailable) currentExperts.Add(experts[i]);
+            if (expert.expertStatus == ExpertStatus.Available) currentExperts.Add(experts[i]);
         }
 
        return (currentExperts.Count == 0 ? null : currentExperts);
+    }
+    public void AllocatePeopleUpdate() {
+        
     }
 }

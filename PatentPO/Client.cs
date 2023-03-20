@@ -1,22 +1,22 @@
 namespace PatentPO;
 public class Client : ICheckParticipant {
     public string? fullName {get; private set;} 
-    private List<Application> applications = new List<Application>();
+    public List<Application> applicationOnExpertise {get; private set;} = new List<Application>();
 
     public Client(string fullName) {
         this.fullName = fullName;        
     }
     public List<Patent>? patents {get; private set;} 
-    // public List<Check<Application>>? checksForApplication {get; private set;}
 
-    public Check<Application> SendApplication(string inventionName, string essay) {
+    public Application SendApplication(string inventionName, string essay) {
         var application = new Application(inventionName, essay, this);
-        applications.Add(application);
+        applicationOnExpertise.Add(application);
         
         Rospatent rospatent = Rospatent.getInstance();
         var check = rospatent.RegisterApplication(application, this);
+        application.checkApplication = check;
 
-        return check;
+        return application;
     }
     public void PayFee(Check<Application> check) {
         check.PayCheck();
