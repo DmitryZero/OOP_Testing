@@ -1,0 +1,5 @@
+namespace PatentPO;
+
+interface ICheckParticipant {
+
+}

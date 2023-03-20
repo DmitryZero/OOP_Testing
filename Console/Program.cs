@@ -6,10 +6,16 @@ namespace Programm
     {
         static void Main(string[] args)
         {   
-            Client client = new Client("Никитин Дмитрий Алексеевич");         
-            // Application application = new Application("Изобретение 1", "Помогает удешевить производство");
-            
-            
+            Expert expert = new Expert("Михайлов Андрей Виктороич");
+            var rospatent = Rospatent.getInstance();
+            rospatent.experts.Add(expert);
+
+            Client client = new Client("Никитин Дмитрий Алексеевич");       
+            var check = client.SendApplication("Тест 1", "Тест 2");     
+            client.PayFee(check);
+
+            // client.PayCheck(check);
+
         }
     }
 }

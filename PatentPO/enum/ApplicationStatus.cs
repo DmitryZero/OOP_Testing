@@ -1,5 +1,5 @@
 public enum ApplicationStatus {
-    New,
+    Registration,
     FirstExpertise,
     SecondExpertise,
     Approved,
