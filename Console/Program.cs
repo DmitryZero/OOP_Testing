@@ -7,7 +7,7 @@ namespace Programm
         static void Main(string[] args)
         {
             var experts = new List<Expert> {
-                new Expert("Михайлов Андрей Виктороич"),
+                new Expert("Михайлов Андрей Викторович"),
                 new Expert("Чернышев Сергей Дмитриевич"),
                 new Expert("Большаков Виктор Владимирович")
             };
@@ -18,9 +18,9 @@ namespace Programm
 
             Client client = new Client("Никитин Дмитрий Алексеевич");
             var application = client.SendApplication("Тест 1", "Тест 2");
-            if (application.checkApplication != null) client.PayFee(application.checkApplication);
+            if (application.registrationCheck != null) client.PayFee(application.registrationCheck);
 
-            var currentExpert = application.expertise?.firstExpert;
+            var currentExpert = application.GetFirstExpertiseExpert();
             if (currentExpert != null)
             {
                 currentExpert.ApproveExpertise();

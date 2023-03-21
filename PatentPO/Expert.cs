@@ -2,8 +2,7 @@ namespace PatentPO;
 public class Expert
 {
     public string fullName { get; private set; }
-    internal List<Expertise> expertises { get; set; } = new List<Expertise>();
-    internal Expertise? currentExpertise { get; set; }
+    internal Application.Expertise? currentExpertise { get; set; }
     internal ExpertStatus expertStatus { get; set; } = ExpertStatus.Available;
     public Expert(string fullName)
     {
@@ -11,35 +10,60 @@ public class Expert
     }
     public void ApproveExpertise()
     {
-        if (currentExpertise != null && currentExpertise.expertiseStatus == ExpertiseStatus.FirstExpertise)
+        if (currentExpertise != null && currentExpertise.application.status == ApplicationStatus.FirstExpertise)
         {
             var expertise = currentExpertise;
-            currentExpertise.expertiseStatus = ExpertiseStatus.SecondExpertise;            
+            currentExpertise = null;                        
+
+            expertStatus = ExpertStatus.Available;            
+
+            var rospatent = Rospatent.getInstance();
+            rospatent.SendCheckForSecondExpertise(expertise.application);
+            rospatent.RelocatePeopleOnExpertiseEnd();
+        }
+        if (currentExpertise != null && currentExpertise.application.status == ApplicationStatus.SecondExpertise) {
+            currentExpertise.approvalList.Add(new Tuple<bool, string>(true, "Одобрено"));        
+
+            var rospatent = Rospatent.getInstance();              
+            if (currentExpertise.approvalList.All(item => item.Item1 == true) && currentExpertise.approvalList.Count == Rospatent.secondExpertiseLength) {
+                var expertise = currentExpertise;
+                
+                expertise.application.status = ApplicationStatus.Approved;   
+
+                expertise?.secondExperts?.ForEach(expert => {                    
+                    expert.expertStatus = ExpertStatus.Available;
+                    expert.currentExpertise = null;
+                });
+
+                if (expertise != null) rospatent.CreatePatent(expertise.application);
+
+                return;
+            } else currentExpertise.application.status = ApplicationStatus.Rejected;
+
+            rospatent.RelocatePeopleOnExpertiseEnd(); 
+        } 
+    }
+    public void RejectExpertise(string rejectionReason)
+    {
+        if (currentExpertise != null && currentExpertise.application.status == ApplicationStatus.FirstExpertise)
+        {
+            currentExpertise.application.status = ApplicationStatus.Rejected;
             currentExpertise = null;
             expertStatus = ExpertStatus.Available;
 
             var rospatent = Rospatent.getInstance();
-            rospatent.AllocatePeopleForSecondExpertise(expertise);
+            rospatent.RelocatePeopleOnExpertiseEnd();
         }
-        if (currentExpertise != null && currentExpertise.expertiseStatus == ExpertiseStatus.SecondExpertise) {
-            currentExpertise.expertiseStatus = ExpertiseStatus.Approved;
-            currentExpertise.approvalList.Add(true);
-            expertStatus = ExpertStatus.Available;
-            
-        } 
+        if (currentExpertise != null && currentExpertise.application.status == ApplicationStatus.SecondExpertise) {
+            currentExpertise.application.status = ApplicationStatus.Rejected;
 
-    }
-    public void RejectExpertise()
-    {
-        if (currentExpertise != null && currentExpertise.expertiseStatus == ExpertiseStatus.FirstExpertise) {
-            currentExpertise.expertiseStatus = ExpertiseStatus.Rejected;
-            currentExpertise.approvalList.Add(false);
-            expertStatus = ExpertStatus.Available;   
-        }
-        if (currentExpertise != null && currentExpertise.expertiseStatus == ExpertiseStatus.SecondExpertise) {
-            currentExpertise.expertiseStatus = ExpertiseStatus.Rejected;
-            currentExpertise.approvalList.Add(false);
-            expertStatus = ExpertStatus.Available;            
+            if (currentExpertise.secondExperts != null) currentExpertise.secondExperts.ForEach(item => {
+                item.expertStatus = ExpertStatus.Available;
+                item.currentExpertise = null;
+            });
+
+            var rospatent = Rospatent.getInstance();
+            rospatent.RelocatePeopleOnExpertiseEnd();
         } 
     }
 }

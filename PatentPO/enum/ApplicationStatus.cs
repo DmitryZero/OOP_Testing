@@ -1,6 +1,11 @@
 public enum ApplicationStatus {
-    Registration,
+    newApplication,
+    awaitRegistrationPayment,
+    awaitFirstExpertisePayment,
+    awaitFirstExpertise, 
     FirstExpertise,
+    AwaitSecondExpertisePayment,
+    AwaitSecondExpertise,
     SecondExpertise,
     Approved,
     Rejected
