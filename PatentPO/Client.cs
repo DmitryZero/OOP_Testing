@@ -5,6 +5,7 @@ public class Client {
     public List<Patent> patents {get; set;} = new List<Patent>();
     public List<Patent> membershipPatents {get; set;} = new List<Patent>();
     public List<Check> patentChecks {get; set;} = new List<Check>();
+    public List<string> notificationList {get; set;} = new List<string>();
 
     public Client(string fullName) {
         this.fullName = fullName;        
@@ -21,6 +22,12 @@ public class Client {
     }
     public void SendCheckForMembership(Client member, Patent patent, uint summ) {
         Rospatent rospatent = Rospatent.getInstance();
+
+        if (patent.isExpired) {            
+            patent.application.client.notificationList.Add(patent.application.inventionName + " истёк и из-за этого на него могут быть переданы права!");   
+            return;
+        }
+
         this.patentChecks.Add(new Check(member, this, CheckType.MembershipPayment, summ, patent, rospatent.GiveRightForPatent));
     }
     public void PayFee(Check check) {

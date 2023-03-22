@@ -8,12 +8,13 @@ public class Check
     public Rospatent? senderRospatent { get; private set; }
     public ulong summ { get; private set; }
     private Func<Application, bool>? callbackApplication;
-    private Func<Patent, Patent>? callbackPatent;
+    private Func<Patent, Patent>? callbackPatentSend;
     private Action<Patent, Client>? callbackMembership;
+    private Func<Patent, bool>? callbackPatentExtension;
     private Application? application;
     private Patent? patent;
     public CheckStatus status { get; private set; }
-    public CheckType checkType { get; private set; }    
+    public CheckType checkType { get; private set; }          
     internal Check(Client payer, Rospatent sender,
                    CheckType checkType, ulong summ, Application application, Func<Application, bool> callbackApplication)
     {
@@ -38,7 +39,7 @@ public class Check
         this.patent = patent;
 
         status = CheckStatus.PendingPayment;
-        this.callbackPatent = callbackPatent;
+        this.callbackPatentSend = callbackPatent;
     }    
     internal Check(Client payer, Client sender,
                    CheckType checkType, ulong summ, Patent patent, Action<Patent, Client> callbackMembership)
@@ -52,7 +53,20 @@ public class Check
 
         status = CheckStatus.PendingPayment;
         this.callbackMembership = callbackMembership;
-    }
+    }    
+    internal Check(Client payer, Rospatent sender,
+                   CheckType checkType, ulong summ, Patent patent, Func<Patent, bool> callbackPatentExtension)
+    {
+        this.payerClient = payer;
+        this.senderRospatent = sender;
+        this.summ = summ;
+        this.checkType = checkType;
+
+        this.patent = patent;
+
+        status = CheckStatus.PendingPayment;
+        this.callbackPatentExtension = callbackPatentExtension;
+    }  
     public bool PayCheck()
     {
         status = CheckStatus.Payed;
@@ -64,13 +78,18 @@ public class Check
             return true;
         }
 
-        if (checkType == CheckType.PatentGrantingFee && callbackPatent != null && patent != null) {
-            callbackPatent(patent);
+        if (checkType == CheckType.PatentGrantingFee && callbackPatentSend != null && patent != null) {
+            callbackPatentSend(patent);
             return true;
         }
 
         if (checkType == CheckType.MembershipPayment && callbackMembership != null && patent != null) {
             callbackMembership(patent, payerClient);
+            return true;
+        }
+
+        if (checkType == CheckType.ExtendPatentPayment && callbackPatentExtension != null && patent != null) {
+            callbackPatentExtension(patent);
             return true;
         }
 

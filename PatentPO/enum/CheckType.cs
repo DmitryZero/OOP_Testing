@@ -3,5 +3,6 @@ public enum CheckType {
     FirstExpertiseFee,
     SecondExpertiseFee,
     PatentGrantingFee,
-    MembershipPayment
+    MembershipPayment,
+    ExtendPatentPayment
 }

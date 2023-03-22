@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace PatentPO;
 //Singleton
-public class Rospatent : ICheckParticipant
+public class Rospatent
 {
     private static Rospatent? instance;
     private static object syncRoot = new Object();
@@ -10,6 +10,7 @@ public class Rospatent : ICheckParticipant
     public static uint firstExpertiseFee = 3500;
     public static uint secondExpertiseFee = 9000;
     public static uint patentGrant = 1500;
+    public static uint patentExtentios = 5000;
     public static ushort secondExpertiseLength = 3;
 
     private List<Application> applications = new List<Application>();
@@ -50,8 +51,13 @@ public class Rospatent : ICheckParticipant
     }
     internal void SendCheckForPatent(Patent patent)
     {
-        patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.RegistrationFee, Rospatent.registrationFee,
+        patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrant,
                                            patent, GivePatent));
+    }
+    internal void SendCheckPatentExtention(Patent patent)
+    {
+        patent.application.client.patentChecks.Add(new Check(patent.application.client, this, CheckType.ExtendPatentPayment, Rospatent.patentExtentios, 
+            patent, ExtendPatent));
     }
     internal bool RegisterApplication(Application application)
     {
@@ -141,8 +147,21 @@ public class Rospatent : ICheckParticipant
         client.patents.Add(patent);
         return patent;
     }
-    internal void GiveRightForPatent(Patent patent, Client payerClient) {
+    internal void GiveRightForPatent(Patent patent, Client payerClient) {    
         patent.members.Add(payerClient);
         payerClient.membershipPatents.Add(patent);
+    }
+    public bool ExtendPatent(Patent patent) {
+        if (patent.isExpired) return false;
+
+        patent.expireDate.AddYears(1);
+        if (patent.expireDate >= patent.maxPatentDuration) {
+            patent.isExpired = true;
+            return false;
+        }
+
+        patent.application.client.notificationList.Add(patent.application.inventionName + " был продлён");        
+
+        return true;
     }
 }
