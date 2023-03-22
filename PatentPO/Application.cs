@@ -7,7 +7,7 @@ public partial class Application {
     public Check? registrationCheck {get; set;}
     public Check? firstExpertiseCheck {get; set;}
     public Check? secondExpertiseCheck {get; set;} 
-    public Patent? patent {get; set;}   
+    public Patent? patent {get; set;}       
     internal Application.Expertise? expertise {get; set;}
 
     public Application(string inventionName, string essay, Client client) {

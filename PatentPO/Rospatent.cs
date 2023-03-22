@@ -134,7 +134,15 @@ public class Rospatent : ICheckParticipant
     }
     internal Patent GivePatent(Patent patent)
     {
-        patent.application.patent = patent;
+        var application = patent.application;
+        var client = application.client;        
+
+        application.patent = patent;
+        client.patents.Add(patent);
         return patent;
+    }
+    internal void GiveRightForPatent(Patent patent, Client payerClient) {
+        patent.members.Add(payerClient);
+        payerClient.membershipPatents.Add(patent);
     }
 }
