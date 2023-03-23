@@ -1,0 +1,6 @@
+@startuml
+enum ExpertStatus {
+    Available,
+    Busy,
+}
+@enduml

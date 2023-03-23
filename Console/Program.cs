@@ -18,13 +18,13 @@ namespace Programm
 
             Client client = new Client("Никитин Дмитрий Алексеевич");
             var application = client.SendApplication("Тест 1", "Тест 2");
-            if (application.registrationCheck != null) client.PayFee(application.registrationCheck);
+            // if (application.registrationCheck != null) client.PayFee(application.registrationCheck);
 
-            var currentExpert = application.GetFirstExpertiseExpert();
-            if (currentExpert != null)
-            {
-                currentExpert.ApproveExpertise();
-            }
+            // var currentExpert = application.GetFirstExpertiseExpert();
+            // if (currentExpert != null)
+            // {
+            //     currentExpert.ApproveExpertise();
+            // }
 
         }
     }

@@ -1,0 +1,14 @@
+@startuml
+!include .\\Application.puml
+!include .\\ApplicationExpertise.puml
+!include .\\Check.puml
+!include .\\Client.puml
+!include .\\Expert.puml
+!include .\\Patent.puml
+!include .\\Rospatent.puml
+!include .\\enum\ApplicationStatus.puml
+!include .\\enum\CheckStatus.puml
+!include .\\enum\CheckType.puml
+!include .\\enum\ExpertStatus.puml
+!include .\\utility\DateClass.puml
+@enduml

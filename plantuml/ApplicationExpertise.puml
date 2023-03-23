@@ -1,0 +1,13 @@
+@startuml
+class Application <<partial>> {
+}
+class Expertise {
+    + firstExpert: Expert? 
+    + secondExperts: List<Expert>?  
+    + approvalList: List<bool> 
+    + application: Application 
+    + Expertise(application: Application )
+}
+Expertise --> Application
+Application +-- Expertise
+@enduml

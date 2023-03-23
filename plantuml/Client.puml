@@ -1,0 +1,18 @@
+@startuml
+class Client {
+    + fullName: string?        
+    + applications: List<Application> 
+    + patents: List<Patent> 
+    + membershipPatents: List<Patent> 
+    + patentChecks: List<Check> 
+    + notificationList: List<string> 
+    + Client(fullName: string)
+    + SendApplication(inventionName: string, essay: string) : Application
+    + SendCheckForMembership(member: Client, patent: Patent, summ: uint ): void
+    + PayFee(check: Check): void
+}
+Client "1" o--- "0..*" Application
+Client "0..*" o-- "0..*" Patent
+Client "1" o-- "0..*" Check
+
+@enduml

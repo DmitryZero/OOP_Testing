@@ -1,0 +1,6 @@
+@startuml
+enum CheckStatus {
+    PendingPayment,
+    Payed,
+}
+@enduml

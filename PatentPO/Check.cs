@@ -6,7 +6,7 @@ public class Check
     public Client payerClient { get; private set; }
     public Client? senderClient { get; private set; }
     public Rospatent? senderRospatent { get; private set; }
-    public ulong summ { get; private set; }
+    public uint summ { get; private set; }
     private Func<Application, bool>? callbackApplication;
     private Func<Patent, Patent>? callbackPatentSend;
     private Action<Patent, Client>? callbackMembership;
@@ -16,7 +16,7 @@ public class Check
     public CheckStatus status { get; private set; }
     public CheckType checkType { get; private set; }          
     internal Check(Client payer, Rospatent sender,
-                   CheckType checkType, ulong summ, Application application, Func<Application, bool> callbackApplication)
+                   CheckType checkType, uint summ, Application application, Func<Application, bool> callbackApplication)
     {
         this.payerClient = payer;
         this.senderRospatent = sender;
@@ -29,7 +29,7 @@ public class Check
         this.callbackApplication = callbackApplication;
     }
     internal Check(Client payer, Rospatent sender,
-                   CheckType checkType, ulong summ, Patent patent, Func<Patent, Patent> callbackPatent)
+                   CheckType checkType, uint summ, Patent patent, Func<Patent, Patent> callbackPatentSend)
     {
         this.payerClient = payer;
         this.senderRospatent = sender;
@@ -39,10 +39,10 @@ public class Check
         this.patent = patent;
 
         status = CheckStatus.PendingPayment;
-        this.callbackPatentSend = callbackPatent;
+        this.callbackPatentSend = callbackPatentSend;
     }    
     internal Check(Client payer, Client sender,
-                   CheckType checkType, ulong summ, Patent patent, Action<Patent, Client> callbackMembership)
+                   CheckType checkType, uint summ, Patent patent, Action<Patent, Client> callbackMembership)
     {
         this.payerClient = payer;
         this.senderClient = sender;
@@ -55,7 +55,7 @@ public class Check
         this.callbackMembership = callbackMembership;
     }    
     internal Check(Client payer, Rospatent sender,
-                   CheckType checkType, ulong summ, Patent patent, Func<Patent, bool> callbackPatentExtension)
+                   CheckType checkType, uint summ, Patent patent, Func<Patent, bool> callbackPatentExtension)
     {
         this.payerClient = payer;
         this.senderRospatent = sender;
@@ -88,7 +88,7 @@ public class Check
             return true;
         }
 
-        if (checkType == CheckType.ExtendPatentPayment && callbackPatentExtension != null && patent != null) {
+        if (checkType == CheckType.ExtensionPatentPayment && callbackPatentExtension != null && patent != null) {
             callbackPatentExtension(patent);
             return true;
         }

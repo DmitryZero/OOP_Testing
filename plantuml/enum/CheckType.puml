@@ -1,8 +1,10 @@
-public enum CheckType {
+@startuml
+enum CheckType {
     RegistrationFee,
     FirstExpertiseFee,
     SecondExpertiseFee,
     PatentGrantingFee,
     MembershipPayment,
-    ExtensionPatentPayment
+    ExtensionPatentPayment,
 }
+@enduml

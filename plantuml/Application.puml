@@ -1,0 +1,15 @@
+@startuml
+class Application <<partial>> {
+    + inventionName: string
+    + essay: string    
+    + status: ApplicationStatus
+    + client: Client    
+    + checks: List<Check> 
+    + patent: Patent?         
+    ~ expertise: Expertise 
+    + Application(inventionName: string, essay: string, client: Client)
+    + GetFirstExpertiseExpert(): Expert?
+    + GetSecondExpertiseExperts(): List<Expert>?    
+}
+Application --> ApplicationStatus
+@enduml

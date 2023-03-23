@@ -9,12 +9,12 @@ public class Rospatent
     public static uint registrationFee = 2000;
     public static uint firstExpertiseFee = 3500;
     public static uint secondExpertiseFee = 9000;
-    public static uint patentGrant = 1500;
-    public static uint patentExtentios = 5000;
+    public static uint patentGrantFee = 1500;
+    public static uint patentExtentiosFee = 5000;
     public static ushort secondExpertiseLength = 3;
 
     private List<Application> applications = new List<Application>();
-    internal Patent? patent { get; private set; }
+    internal List<Patent> patents { get; private set; } = new List<Patent>();
     public List<Expert> experts { get; set; } = new List<Expert>();
     private Rospatent()
     { }
@@ -33,36 +33,36 @@ public class Rospatent
     }
     internal void SendCheckForRegistration(Application application)
     {
-        application.status = ApplicationStatus.awaitRegistrationPayment;
-        application.registrationCheck = new Check(application.client, this, CheckType.RegistrationFee, Rospatent.registrationFee,
-                                           application, RegisterApplication);
+        application.status = ApplicationStatus.AwaitRegistrationPayment;
+        application.checks.Add(new Check(application.client, this, CheckType.RegistrationFee, Rospatent.registrationFee,
+                                           application, RegisterApplication));
     }
     internal void SendCheckForFirstExpertise(Application application)
     {
-        application.status = ApplicationStatus.awaitFirstExpertisePayment;
-        application.firstExpertiseCheck = new Check(application.client, this, CheckType.FirstExpertiseFee, Rospatent.firstExpertiseFee,
-                                           application, AllocatePeople);
+        application.status = ApplicationStatus.AwaitFirstExpertisePayment;
+        application.checks.Add(new Check(application.client, this, CheckType.FirstExpertiseFee, Rospatent.firstExpertiseFee,
+                                           application, AllocatePeople));
     }
     internal void SendCheckForSecondExpertise(Application application)
     {
         application.status = ApplicationStatus.AwaitSecondExpertisePayment;
-        application.secondExpertiseCheck = new Check(application.client, this, CheckType.SecondExpertiseFee, Rospatent.secondExpertiseFee,
-                                           application, AllocatePeople);
+        application.checks.Add(new Check(application.client, this, CheckType.SecondExpertiseFee, Rospatent.secondExpertiseFee,
+                                           application, AllocatePeople));
     }
-    internal void SendCheckForPatent(Patent patent)
+    internal void SendCheckForPatentGrant(Patent patent)
     {
-        patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrant,
-                                           patent, GivePatent));
+        patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrantFee,
+                                           patent, GivePatentToClient));
     }
     internal void SendCheckPatentExtention(Patent patent)
     {
-        patent.application.client.patentChecks.Add(new Check(patent.application.client, this, CheckType.ExtendPatentPayment, Rospatent.patentExtentios, 
+        patent.application.client.patentChecks.Add(new Check(patent.application.client, this, CheckType.ExtensionPatentPayment, Rospatent.patentExtentiosFee, 
             patent, ExtendPatent));
     }
     internal bool RegisterApplication(Application application)
     {
-        applications.Add(application);
-        application.status = ApplicationStatus.awaitFirstExpertisePayment;
+        application.status = ApplicationStatus.Registration;
+        applications.Add(application);        
 
         SendCheckForFirstExpertise(application);
 
@@ -71,13 +71,15 @@ public class Rospatent
 
     internal bool AllocatePeople(Application application)
     {
-        if (application.expertise == null && application.status == ApplicationStatus.awaitFirstExpertise)
+        if (application.status == ApplicationStatus.AwaitFirstExpertisePayment) application.status = ApplicationStatus.AwaitFirstExpertise;
+
+        if (application.expertise == null && application.status == ApplicationStatus.AwaitFirstExpertise)
         {
             var availableExperts = GetFreeExpert(1);
             if (availableExperts != null && availableExperts.Count == 1)
             {
                 application.status = ApplicationStatus.FirstExpertise;
-                Application.Expertise expertise = new Application.Expertise(application.client, application);
+                Application.Expertise expertise = new Application.Expertise(application);
                 application.expertise = expertise;
 
 
@@ -101,7 +103,7 @@ public class Rospatent
 
                 return true;
             }
-        }
+        }     
 
         return false;
     }
@@ -125,7 +127,7 @@ public class Rospatent
         {
             var currentApplication = applications[i];
 
-            if (currentApplication.status == ApplicationStatus.awaitFirstExpertise ||
+            if (currentApplication.status == ApplicationStatus.AwaitFirstExpertise ||
                 currentApplication.status == ApplicationStatus.AwaitSecondExpertise)
             {
                 var success = AllocatePeople(currentApplication);
@@ -135,10 +137,13 @@ public class Rospatent
     }
     internal void CreatePatent(Application application)
     {
-        this.patent = new Patent(application);
-        SendCheckForPatent(this.patent);
+        if (application.patent != null) {
+            application.client.notificationList.Add(application.inventionName + " - уже есть патент!");    
+        }
+        this.patents.Add(new Patent(application));
+        SendCheckForPatentGrant(this.patents.Last());
     }
-    internal Patent GivePatent(Patent patent)
+    internal Patent GivePatentToClient(Patent patent)
     {
         var application = patent.application;
         var client = application.client;        

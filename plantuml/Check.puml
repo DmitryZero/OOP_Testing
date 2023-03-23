@@ -1,0 +1,23 @@
+@startuml
+class Check {
+    + payerClient: Client 
+    + senderClient: Client?
+    + senderRospatent: Rospatent? 
+    + summ: uint     
+    + status: CheckStatus 
+    + checkType: CheckType     
+    - callbackApplication: Func<Application, bool>? 
+    - callbackPatentSend: Func<Patent, Patent>? 
+    - callbackMembership: Action<Patent, Client>? 
+    - callbackPatentExtension: Func<Patent, bool>? 
+    - application: Application? 
+    - patent: Patent?     
+    + PayCheck() : bool
+    ~ Check(payer: Client, sender: Rospatent, checkType: CheckType, summ: uint , application: Application, callbackApplication: Func<Application, bool>)
+    ~ Check(payer: Client, sender: Rospatent, checkType: CheckType, summ: uint , patent: Patent, callbackPatentSend: Func<Patent, Patent>)
+    ~ Check(payer: Client, sender: Client, checkType: CheckType, summ: uint , patent: Patent, callbackMembership: Action<Patent, Client>)
+    ~ Check(payer: Client, sender: Rospatent, checkType: CheckType, summ: uint , patent: Patent, callbackPatentExtension: Func<Patent, bool>)
+}
+Check --> CheckStatus
+Check --> CheckType
+@enduml

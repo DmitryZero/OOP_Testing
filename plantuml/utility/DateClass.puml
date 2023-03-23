@@ -1,0 +1,7 @@
+@startuml
+class DateClass {    
+    - {static} syncRoot: object
+    + date: DateOnly 
+    + {static} getInstance(): DateClass        
+}
+@enduml

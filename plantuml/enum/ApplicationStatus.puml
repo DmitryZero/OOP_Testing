@@ -1,13 +1,15 @@
-public enum ApplicationStatus {
-    NewApplication,    
+@startuml
+enum ApplicationStatus {
+    NewApplication,
     AwaitRegistrationPayment,
     Registration,
     AwaitFirstExpertisePayment,
-    AwaitFirstExpertise, 
+    AwaitFirstExpertise,
     FirstExpertise,
     AwaitSecondExpertisePayment,
     AwaitSecondExpertise,
     SecondExpertise,
     Approved,
-    Rejected
+    Rejected,
 }
+@enduml

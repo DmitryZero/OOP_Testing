@@ -1,0 +1,32 @@
+@startuml
+class Rospatent {
+    - {static} Rospatent: instance
+    - {static} syncRoot: object
+    + {static} registrationFee: uint = 2000
+    + {static} firstExpertiseFee: uint = 3500
+    + {static} secondExpertiseFee: uint = 9000
+    + {static} patentGrantFee: uint = 1500
+    + {static} patentExtentiosFee: uint = 5000
+    + {static} secondExpertiseLength: ushort = 3    
+    + experts: List<Expert> 
+    ~ patent: List<Patent> 
+    - application: List<Application>
+    + {static} getInstance(): Rospatent    
+    ~ SendCheckForRegistration(application: Application): void
+    ~ SendCheckForFirstExpertise(application: Application): void
+    ~ SendCheckForSecondExpertise(application: Application): void
+    ~ SendCheckForPatentGrant(patent: Patent): void
+    ~ SendCheckPatentExtention(patent: Patent): void
+    ~ RegisterApplication(application: Application): bool
+    ~ AllocatePeople(application: Application): bool
+    ~ GetFreeExpert(number: ulong): List<>Expert
+    ~ RelocatePeopleOnExpertiseEnd(): void
+    ~ CreatePatent(application: Application): void
+    ~ GivePatentToClient(patent: Patent): Patent
+    ~ GiveRightForPatent(patent: Patent, payerClient: Client): Patent
+    + ExtendPatent(patent:Patent): bool
+}
+Rospatent o-- "0..*" Expert
+Rospatent o-- "0..*" Patent
+Rospatent o-- "0..*" Application
+@enduml

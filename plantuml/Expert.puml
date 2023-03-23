@@ -1,0 +1,11 @@
+@startuml
+class Expert {
+    + fullName: string
+    ~ status: ExpertStatus
+    ~ currentExpertise: Expertise 
+    ~ Expert(fullName: string)
+    + ApproveExpertise(): void
+    + RejectExpertise(): void
+}
+Expert --> ExpertStatus
+@enduml

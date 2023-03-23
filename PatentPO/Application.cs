@@ -4,16 +4,14 @@ public partial class Application {
     public string essay {get; private set;}
     public ApplicationStatus status {get; set;}        
     public Client client {get; private set;}
-    public Check? registrationCheck {get; set;}
-    public Check? firstExpertiseCheck {get; set;}
-    public Check? secondExpertiseCheck {get; set;} 
+    public List<Check> checks {get; set;} = new List<Check>();
     public Patent? patent {get; set;}       
     internal Application.Expertise? expertise {get; set;}
 
     public Application(string inventionName, string essay, Client client) {
         this.inventionName = inventionName;        
         this.essay = essay;
-        status = ApplicationStatus.newApplication;
+        status = ApplicationStatus.NewApplication;
 
         this.client = client;
     }
