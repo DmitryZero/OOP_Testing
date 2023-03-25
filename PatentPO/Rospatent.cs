@@ -54,10 +54,12 @@ public class Rospatent
         patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrantFee,
                                            patent, GivePatentToClient));
     }
-    internal void SendCheckPatentExtention(Patent patent)
+    internal bool SendCheckPatentExtention(Patent patent)
     {
+        if (!patent.IsExtendPossible()) return false;
         patent.application.client.patentChecks.Add(new Check(patent.application.client, this, CheckType.ExtensionPatentPayment, Rospatent.patentExtentiosFee, 
             patent, ExtendPatent));
+        return true;
     }
     internal bool RegisterApplication(Application application)
     {
@@ -156,15 +158,9 @@ public class Rospatent
         patent.members.Add(payerClient);
         payerClient.membershipPatents.Add(patent);
     }
-    public bool ExtendPatent(Patent patent) {
-        if (patent.isExpired) return false;
-
-        patent.expireDate.AddYears(1);
-        if (patent.expireDate >= patent.maxPatentDuration) {
-            patent.isExpired = true;
-            return false;
-        }
-
+    private bool ExtendPatent(Patent patent) {
+        if (patent.IsExtendPossible()) return false;
+        patent.ExtendPatent();
         patent.application.client.notificationList.Add(patent.application.inventionName + " был продлён");        
 
         return true;

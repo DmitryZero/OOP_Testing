@@ -1,0 +1,36 @@
+@startuml "SequenceDiagrammPatentRegistration"
+actor Client
+participant Patent
+participant Rospantent
+participant Check
+participant ClientBuyer
+
+activate Patent
+Client<-Patent: patent
+activate Client
+
+Client->Client: SendCheckForMembership(client, patent)
+activate Client
+Client->Patent: IsExpired()
+
+alt Патент не истёк
+    Client<--Patent: true
+
+    Client->Check: <<create>>
+    activate Check
+    ClientBuyer<--Check: checks.add(check)
+    activate ClientBuyer
+    Check<-ClientBuyer: PayFee(check)
+    deactivate ClientBuyer
+    Rospantent<-Check: GiveRightForPatent(client, clientBuyer)
+    deactivate Check
+    activate Rospantent
+    Patent<-Rospantent: patent.members.add(clientBuyer)
+    deactivate Rospantent
+else Патент истёк - break
+    Client<--Patent: false
+    deactivate Client
+    deactivate Client
+end
+
+@enduml

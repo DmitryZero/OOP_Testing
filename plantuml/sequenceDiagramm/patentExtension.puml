@@ -1,0 +1,47 @@
+@startuml "SequenceDiagrammPatentRegistration"
+actor Client
+participant Patent
+participant Rospantent
+participant Check
+
+
+Client<-Patent: patent
+activate Client
+activate Patent
+Client->Client: ExtendPatent(patent)
+activate Client
+alt Патент не просрочен    
+    Client->Rospantent: SendCheckPatentExtention(patent)
+    deactivate Client
+    deactivate Client
+    activate Rospantent
+    Rospantent->Check: <<create>>
+    activate Check
+    Rospantent<--Check: check    
+    Patent<-Rospantent: patent.checks.add(patent)    
+    Client<--Rospantent: true    
+    deactivate Rospantent
+
+    Client<-Patent: patent
+    activate Client    
+    Client->Check: PayCheck(patent.checks.Last())
+    deactivate Client        
+    Rospantent<-Check: ExtendPatent(patent)
+    activate Rospantent
+    deactivate Check
+    Patent<-Rospantent: ExtendPatent(patent)
+    activate Patent
+    Patent->Rospantent: true
+    deactivate Patent
+    deactivate Rospantent      
+else Патент просрочен
+    Client->Rospantent: SendCheckPatentExtention(patent)
+    activate Client
+    activate Rospantent
+    Client<--Rospantent: false
+    deactivate Rospantent    
+    deactivate Client
+end
+deactivate Patent  
+
+@enduml

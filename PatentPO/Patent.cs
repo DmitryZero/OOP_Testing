@@ -4,19 +4,21 @@ public class Patent
 {
     public Application application { get; set; }
     public List<Check> patentChecks { get; set; } = new List<Check>();
-    public List<Client> members {get; set;} = new List<Client>();
-    public DateOnly conclusionDate {get; private set;}
-    public DateOnly expireDate {get; private set;}
+    public List<Client> members { get; set; } = new List<Client>();
+    public DateOnly conclusionDate { get; private set; }
+    public DateOnly expireDate { get; private set; }
     public DateOnly maxPatentDuration;
-    public bool isExpired {
-        get {
-            DateClass dateClass = DateClass.getInstance();
-            var currentDate = dateClass.date;
-            return currentDate >= expireDate;
-        }
-        set {
-            isExpired = value;
-        }
+    private bool isExpired = false;
+    public bool GetIsExpired() {return isExpired;}
+    public void ExtendPatent() {        
+        expireDate = new DateOnly(conclusionDate.Day, conclusionDate.Month, conclusionDate.Year).AddYears(1);
+    }
+    public bool IsExtendPossible() {
+        if (isExpired) return false;
+
+        DateClass dateClass = DateClass.getInstance();
+        var nextExpireDate = new DateOnly(expireDate.Day, expireDate.Month, expireDate.Year).AddYears(1);
+        return (!(nextExpireDate >= maxPatentDuration));
     }
     public Patent(Application application)
     {
@@ -28,5 +30,5 @@ public class Patent
         maxPatentDuration = new DateOnly(conclusionDate.Day, conclusionDate.Month, conclusionDate.Year).AddYears(20);
 
         isExpired = false;
-    }    
+    }
 }

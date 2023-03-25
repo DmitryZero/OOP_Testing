@@ -1,0 +1,145 @@
+@startuml "SequenceDiagrammPatentRegistration"
+actor Client 
+participant Application
+participant Patent
+participant Rospantent
+participant Check
+participant Expertise
+participant Expert
+
+==Регистрация==
+
+Client->Client: SendApplication(inventionName, essay)
+activate Client
+Client->Application : <<create>>
+activate Application
+Client<--Application: application
+
+Client->Rospantent : SendCheckForRegistration(application)
+deactivate Client
+activate Rospantent
+Rospantent->Check: <<create>>
+activate Check
+Rospantent<--Check: check
+Application<--Rospantent: application.checks.add(check)
+Client<-Application: application
+activate Client
+deactivate Rospantent
+
+Client -> Check: PayFee(application.check)
+deactivate Client
+Rospantent <- Check: RegisterApplication(application)
+deactivate Check
+
+==Первичная экспертиза==
+activate Rospantent
+Rospantent -> Rospantent: SendCheckForFirstExpertise(application)
+activate Rospantent
+
+Rospantent->Check: <<create>>
+activate Check
+Rospantent<--Check: check
+Application<--Rospantent: application.checks.add(check)
+Client<-Application: application
+activate Client
+deactivate Rospantent
+deactivate  Rospantent
+
+Client -> Check: PayFee(application.check)
+deactivate Client
+Rospantent <- Check: AllocatePeople(application)
+deactivate Check
+activate Rospantent
+Rospantent->Rospantent: GetFreeExperts(1)
+activate Rospantent
+
+alt Есть свободный эксперт
+    Rospantent->Expertise: <<create>>
+    activate Expertise
+    Expertise->Expert: expertise.firstExpert = expert
+    activate Expert
+
+    alt Эксперт одобрил
+        Expert->Expert: ApproveExpertise()
+        activate Expert
+        Expert->Rospantent: SendCheckForSecondExpertise(application)
+        deactivate Expert
+    else Эксперт отклонил - break
+        Expert->Expert: RejectExpertise()
+        activate Expert
+        Expert->Rospantent: RelocatePeopleOnExpertiseEnd(application)
+        deactivate Expert
+        Rospantent->Application: application.status = Rejected                
+    end
+end
+deactivate Expertise   
+
+==Вторичная экспертиза==
+Rospantent->Check: <<create>>
+activate Check
+Rospantent<--Check: check
+Application<--Rospantent: application.checks.add(check)
+Client<-Application: application
+activate Client
+deactivate Rospantent
+deactivate  Rospantent
+
+Client -> Check: PayFee(application.check)
+deactivate Client
+Rospantent <- Check: AllocatePeople(application)
+deactivate Check
+activate Rospantent
+Rospantent->Rospantent: GetFreeExperts(3)
+activate Rospantent
+
+alt Есть свободные эксперты
+    Rospantent->Expertise: <<create>>
+    activate Expertise
+    Expertise->Expert: expertise.firstExpert = expert
+    activate Expert
+
+    alt Все эксперты одобрили
+        Expert->Expert: ApproveExpertise()
+        activate Expert
+        Expert->Rospantent: CreatePatent(application) 
+        activate Rospantent       
+        Patent<-Rospantent: <<create>>
+        activate Patent
+        Patent-->Rospantent: patent
+        deactivate Rospantent
+        deactivate Expert
+    else Не все эксперты одобрили - break
+        Expert->Expert: RejectExpertise()
+        activate Expert
+        Expert->Rospantent: RelocatePeopleOnExpertiseEnd(application)
+        deactivate Expert
+        Rospantent->Application: application.status = Rejected                
+    end
+end
+deactivate Expertise  
+deactivate Expert
+deactivate Expert
+
+==Выдача патента==
+Rospantent->Rospantent: SendCheckForPatentGrant(patent)
+activate Rospantent
+Rospantent->Check: <<create>>
+activate Check
+Rospantent<--Check: check
+Patent<--Rospantent: rospatent.checks.add(check)
+Client<-Patent: patent
+activate Client
+deactivate Rospantent
+deactivate  Rospantent
+deactivate Rospantent
+
+Client -> Check: PayFee(application.check)
+deactivate Client
+Rospantent <- Check: GivePatentToClient(patent)
+activate Rospantent
+deactivate Check
+Application<--Rospantent: application.patent = patent
+deactivate Rospantent
+deactivate Application
+deactivate Patent
+@enduml

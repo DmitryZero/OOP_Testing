@@ -23,14 +23,19 @@ public class Client {
     public void SendCheckForMembership(Client member, Patent patent, uint summ) {
         Rospatent rospatent = Rospatent.getInstance();
 
-        if (patent.isExpired) {            
+        if (patent.IsExtendPossible()) {            
             patent.application.client.notificationList.Add(patent.application.inventionName + " истёк и из-за этого на него могут быть переданы права!");   
             return;
         }
 
-        this.patentChecks.Add(new Check(member, this, CheckType.MembershipPayment, summ, patent, rospatent.GiveRightForPatent));
+        member.patentChecks.Add(new Check(member, this, CheckType.MembershipPayment, summ, patent, rospatent.GiveRightForPatent));
     }
     public void PayFee(Check check) {
         check.PayCheck();
-    }
+    }  
+    public bool ExtendPatent(Patent patent) {
+        Rospatent rospatent = Rospatent.getInstance();
+        
+        return rospatent.SendCheckPatentExtention(patent);
+    }  
 }
