@@ -1,0 +1,25 @@
+@startuml
+class Patent {   
+}
+class Rospatent {  
+}
+class Expert {
+}
+class Client {
+}
+class Check {   
+}
+class Expertise {
+}
+class Application {
+}
+
+Rospatent-->Check: SendCheckForRegistration(Application application)
+Rospatent-->Check: SendCheckForFirstExpertise(Application application)
+Rospatent-->Check: SendCheckForSecondExpertise(Application application)
+Rospatent-->Check: SendCheckForPatentGrant(Application application)
+Rospatent-->Check: SendCheckForRegistration(Application application)
+Rospatent-->Check: SendCheckForRegistration(Application application)
+Rospatent-->Check: SendCheckForRegistration(Application application)
+Rospatent-->Check: SendCheckForRegistration(Application application)
+@enduml

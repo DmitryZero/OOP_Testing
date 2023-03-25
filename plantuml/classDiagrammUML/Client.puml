@@ -10,6 +10,7 @@ class Client {
     + SendApplication(inventionName: string, essay: string) : Application
     + SendCheckForMembership(member: Client, patent: Patent, summ: uint ): void
     + PayFee(check: Check): void
+    + ExtendPatent(patent: Patent): bool
 }
 Client "1" o--- "0..*" Application
 Client "0..*" o-- "0..*" Patent

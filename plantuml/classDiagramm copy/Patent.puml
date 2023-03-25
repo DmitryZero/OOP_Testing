@@ -1,0 +1,17 @@
+@startuml t1
+class Patent {
+    + application: Application     
+    + patentChecks: List<Check> 
+    + members: List<Client>     
+    + conclusionDate: DateOnly 
+    + expireDate: DateOnly 
+    + maxPatentDuration: DateOnly 
+    + isExpired: bool <<get>>
+    + Patent(application: Application)    
+    + GetIsExpired(): bool
+    + ExtendPatent(): void
+    + IsExtendPossible(): void
+}
+Patent --> Application
+Patent o-- "1..*" Check
+@enduml

@@ -11,14 +11,14 @@ public class Patent
     private bool isExpired = false;
     public bool GetIsExpired() {return isExpired;}
     public void ExtendPatent() {        
-        expireDate = new DateOnly(conclusionDate.Day, conclusionDate.Month, conclusionDate.Year).AddYears(1);
+        expireDate = new DateOnly(expireDate.Year, expireDate.Month, expireDate.Day).AddYears(1);
     }
     public bool IsExtendPossible() {
         if (isExpired) return false;
 
         DateClass dateClass = DateClass.getInstance();
-        var nextExpireDate = new DateOnly(expireDate.Day, expireDate.Month, expireDate.Year).AddYears(1);
-        return (!(nextExpireDate >= maxPatentDuration));
+        var nextExpireDate = new DateOnly(expireDate.Year, expireDate.Month, expireDate.Day).AddYears(1);
+        return (!(nextExpireDate > maxPatentDuration));
     }
     public Patent(Application application)
     {
@@ -26,8 +26,8 @@ public class Patent
 
         DateClass dateClass = DateClass.getInstance();
         conclusionDate = dateClass.date;
-        expireDate = new DateOnly(conclusionDate.Day, conclusionDate.Month, conclusionDate.Year).AddYears(1);
-        maxPatentDuration = new DateOnly(conclusionDate.Day, conclusionDate.Month, conclusionDate.Year).AddYears(20);
+        expireDate = new DateOnly(conclusionDate.Year, conclusionDate.Month, conclusionDate.Day).AddYears(1);
+        maxPatentDuration = new DateOnly(conclusionDate.Year, conclusionDate.Month, conclusionDate.Day).AddYears(20);
 
         isExpired = false;
     }

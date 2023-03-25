@@ -7,7 +7,10 @@ class Patent {
     + expireDate: DateOnly 
     + maxPatentDuration: DateOnly 
     + isExpired: bool <<get>>
-    + Patent(application: Application)        
+    + Patent(application: Application)    
+    + GetIsExpired(): bool
+    + ExtendPatent(): void
+    + IsExtendPossible(): void
 }
 Patent --> Application
 Patent o-- "1..*" Check
