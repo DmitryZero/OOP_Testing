@@ -8,13 +8,17 @@ public class Patent
     public DateOnly conclusionDate { get; private set; }
     public DateOnly expireDate { get; private set; }
     public DateOnly maxPatentDuration;
-    private bool isExpired = false;
-    public bool GetIsExpired() {return isExpired;}
-    public void ExtendPatent() {        
+    public bool IsExpired()
+    {
+        return expireDate > maxPatentDuration;
+    }
+    public void ExtendPatent()
+    {
         expireDate = new DateOnly(expireDate.Year, expireDate.Month, expireDate.Day).AddYears(1);
     }
-    public bool IsExtendPossible() {
-        if (isExpired) return false;
+    public bool IsExtendPossible()
+    {
+        if (IsExpired()) return false;
 
         DateClass dateClass = DateClass.getInstance();
         var nextExpireDate = new DateOnly(expireDate.Year, expireDate.Month, expireDate.Day).AddYears(1);
@@ -28,7 +32,5 @@ public class Patent
         conclusionDate = dateClass.date;
         expireDate = new DateOnly(conclusionDate.Year, conclusionDate.Month, conclusionDate.Day).AddYears(1);
         maxPatentDuration = new DateOnly(conclusionDate.Year, conclusionDate.Month, conclusionDate.Day).AddYears(20);
-
-        isExpired = false;
     }
 }

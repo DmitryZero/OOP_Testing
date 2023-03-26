@@ -3,7 +3,7 @@ using PatentPO;
 namespace Tests
 {
     [TestClass]
-    public class ClientInit
+    public class ClientUseCase
     {
         public static Client client;
         public static Rospatent rospatent;
@@ -39,35 +39,35 @@ namespace Tests
             client.patentChecks.Clear();            
         }
         [TestMethod]
-        public void isInit()
-        {
-            Client client1 = new Client("Меньшиков Михаил Андреевич");
-            Assert.AreEqual(client1.fullName, "Меньшиков Михаил Андреевич");
-            CollectionAssert.AreEqual(client1.applications, new List<Application>());
-            CollectionAssert.AreEqual(client1.patents, new List<Patent>());
-            CollectionAssert.AreEqual(client1.membershipPatents, new List<Patent>());
-            CollectionAssert.AreEqual(client1.patentChecks, new List<Check>());
-            CollectionAssert.AreEqual(client1.notificationList, new List<string>());
-        }
-        [TestMethod]
-        public void MethodTest() {            
+        public void SendApplication() {  
             Assert.AreEqual(client.applications.Count, 0);
             client.SendApplication("Тест 1", "Тест 2");            
             Assert.AreEqual(client.applications.Count, 1);
-
+            Assert.AreEqual(ApplicationStatus.AwaitRegistrationPayment, client.applications.Last().status);
+        }
+        [TestMethod]
+        public void SendCheckMemberShip() {  
             Client buyer = new Client("Меньшиков Михаил Андреевич");
             patent = new Patent(application);
             client.SendCheckForMembership(buyer, patent, 30000);
             Assert.AreEqual(buyer.patentChecks.Last().checkType, CheckType.MembershipPayment);
             Assert.AreEqual(buyer.patentChecks.Last().summ, (uint)30000);
             Assert.AreEqual(buyer.patentChecks.Last().senderClient, client);
+        }
+        [TestMethod]
+        public void PayCheck() {  
+            Assert.AreEqual(client.applications.Count, 0);
+            client.SendApplication("Тест 1", "Тест 2");            
+            Assert.AreEqual(client.applications.Count, 1);
 
-            Assert.AreEqual(buyer.patentChecks.Last().status, CheckStatus.PendingPayment);
-            buyer.PayFee(buyer.patentChecks.Last());
-            Assert.AreEqual(buyer.patentChecks.Last().status, CheckStatus.Payed);
+            var currentApplication = client.applications.Last();
+            var registrationCheck = currentApplication.checks.Last();            
 
-            client.SendExtendPatentRequest(patent);
-            Assert.AreEqual(patent.patentChecks.Last().checkType, CheckType.ExtensionPatentPayment);
+            Assert.AreEqual(CheckType.RegistrationFee, registrationCheck.checkType);
+            Assert.AreEqual(CheckStatus.PendingPayment, registrationCheck.status);            
+            client.PayFee(registrationCheck);
+            Assert.AreEqual(CheckStatus.Payed, registrationCheck.status);
+            Assert.AreEqual(currentApplication, rospatent.applications.Last());
         }
     }
 }

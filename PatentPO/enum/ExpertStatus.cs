@@ -1,4 +1,4 @@
-internal enum ExpertStatus {
+public enum ExpertStatus {
     Available,
     Busy
 }

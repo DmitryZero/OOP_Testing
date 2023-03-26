@@ -2,8 +2,8 @@ namespace PatentPO;
 public class Expert
 {
     public string fullName { get; private set; }
-    internal Application.Expertise? currentExpertise { get; set; }
-    internal ExpertStatus expertStatus { get; set; } = ExpertStatus.Available;
+    public Application.Expertise? currentExpertise { get; set; }
+    public ExpertStatus expertStatus { get; set; } = ExpertStatus.Available;
     public Expert(string fullName)
     {
         this.fullName = fullName;
@@ -44,11 +44,11 @@ public class Expert
                     expert.currentExpertise = null;
                 });
 
-                if (expertise != null) rospatent.CreatePatent(expertise.application);
+                if (expertise != null) rospatent.SendRequestToCreatePatent(expertise.application);
 
                 return;
             }
-            else currentExpertise.application.status = ApplicationStatus.Rejected;
+            if (currentExpertise.approvalList.Any(item => item == false) && currentExpertise.approvalList.Count == Rospatent.secondExpertiseLength) currentExpertise.application.status = ApplicationStatus.Rejected;
 
             rospatent.RelocatePeopleOnExpertiseEnd();
         }

@@ -27,8 +27,8 @@ alt Патент не просрочен
     Client->Check: PayCheck(patent.checks.Last())
     deactivate Client        
     Rospantent<-Check: ExtendPatent(patent)
-    activate Rospantent
     deactivate Check
+    activate Rospantent    
     Patent<-Rospantent: ExtendPatent(patent)
     activate Patent
     Patent->Rospantent: true

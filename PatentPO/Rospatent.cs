@@ -13,8 +13,8 @@ public class Rospatent
     public static uint patentExtentiosFee = 5000;
     public static ushort secondExpertiseLength = 3;
 
-    private List<Application> applications = new List<Application>();
-    internal List<Patent> patents { get; private set; } = new List<Patent>();
+    public List<Application> applications = new List<Application>();
+    public List<Patent> patents { get; private set; } = new List<Patent>();
     public List<Expert> experts { get; set; } = new List<Expert>();
     private Rospatent()
     { }
@@ -31,37 +31,41 @@ public class Rospatent
         }
         return instance;
     }
-    internal void SendCheckForRegistration(Application application)
+    public void SendCheckForRegistration(Application application)
     {
         application.status = ApplicationStatus.AwaitRegistrationPayment;
         application.checks.Add(new Check(application.client, this, CheckType.RegistrationFee, Rospatent.registrationFee,
                                            application, RegisterApplication));
     }
-    internal void SendCheckForFirstExpertise(Application application)
+    public void SendCheckForFirstExpertise(Application application)
     {
         application.status = ApplicationStatus.AwaitFirstExpertisePayment;
         application.checks.Add(new Check(application.client, this, CheckType.FirstExpertiseFee, Rospatent.firstExpertiseFee,
                                            application, AllocatePeople));
     }
-    internal void SendCheckForSecondExpertise(Application application)
+    public void SendCheckForSecondExpertise(Application application)
     {
         application.status = ApplicationStatus.AwaitSecondExpertisePayment;
         application.checks.Add(new Check(application.client, this, CheckType.SecondExpertiseFee, Rospatent.secondExpertiseFee,
                                            application, AllocatePeople));
     }
-    internal void SendCheckForPatentGrant(Patent patent)
+    public void SendCheckForPatentGrant(Patent patent, Client client)
     {
-        patent.patentChecks.Add(new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrantFee,
-                                           patent, GivePatentToClient));
+        var check = new Check(patent.application.client, this, CheckType.PatentGrantingFee, Rospatent.patentGrantFee,
+                                           patent, GivePatentToClient);
+        patent.patentChecks.Add(check);
+        client.patentChecks.Add(check);                                    
     }
-    internal bool SendCheckPatentExtention(Patent patent)
+    public bool SendCheckPatentExtention(Patent patent)
     {
         if (!patent.IsExtendPossible()) return false;
-        patent.application.client.patentChecks.Add(new Check(patent.application.client, this, CheckType.ExtensionPatentPayment, Rospatent.patentExtentiosFee, 
-            patent, ExtendPatent));
+        var check = new Check(patent.application.client, this, CheckType.ExtensionPatentPayment, Rospatent.patentExtentiosFee, 
+            patent, ExtendPatent);
+        patent.patentChecks.Add(check);
+        patent.application.client.patentChecks.Add(check);
         return true;
     }
-    internal bool RegisterApplication(Application application)
+    public bool RegisterApplication(Application application)
     {
         application.status = ApplicationStatus.Registration;
         applications.Add(application);        
@@ -71,7 +75,7 @@ public class Rospatent
         return true;
     }
 
-    internal bool AllocatePeople(Application application)
+    public bool AllocatePeople(Application application)
     {
         if (application.status == ApplicationStatus.AwaitFirstExpertisePayment) application.status = ApplicationStatus.AwaitFirstExpertise;
 
@@ -100,7 +104,10 @@ public class Rospatent
             if (availableExperts != null && availableExperts.Count == secondExpertiseLength)
             {
                 application.status = ApplicationStatus.SecondExpertise;
-                experts.ForEach(expert => expert.expertStatus = ExpertStatus.Busy);
+                experts.ForEach(expert => {
+                     expert.expertStatus = ExpertStatus.Busy;
+                     expert.currentExpertise = application.expertise;
+                });
                 application.expertise.secondExperts = availableExperts;
 
                 return true;
@@ -109,13 +116,13 @@ public class Rospatent
 
         return false;
     }
-    private List<Expert>? GetFreeExpert(ulong number)
+    public List<Expert>? GetFreeExpert(uint number)
     {
         if (experts == null) return null;
 
         List<Expert> currentExperts = new List<Expert>();
 
-        for (int i = 0; i < experts.Count; i++)
+        for (int i = 0; i < Math.Min(experts.Count, number); i++)
         {
             var expert = experts[i];
             if (expert.expertStatus == ExpertStatus.Available) currentExperts.Add(experts[i]);
@@ -123,7 +130,7 @@ public class Rospatent
 
         return (currentExperts.Count == 0 ? null : currentExperts);
     }
-    internal void RelocatePeopleOnExpertiseEnd()
+    public void RelocatePeopleOnExpertiseEnd()
     {
         for (int i = 0; i < applications.Count; i++)
         {
@@ -137,15 +144,17 @@ public class Rospatent
             }
         }
     }
-    internal void CreatePatent(Application application)
+    public void SendRequestToCreatePatent(Application application)
     {
         if (application.patent != null) {
             application.client.notificationList.Add(application.inventionName + " - уже есть патент!");    
         }
-        this.patents.Add(new Patent(application));
-        SendCheckForPatentGrant(this.patents.Last());
+        var patent = new Patent(application);
+        this.patents.Add(patent);
+
+        SendCheckForPatentGrant(patent, application.client);
     }
-    internal Patent GivePatentToClient(Patent patent)
+    public Patent GivePatentToClient(Patent patent)
     {
         var application = patent.application;
         var client = application.client;        
@@ -154,12 +163,12 @@ public class Rospatent
         client.patents.Add(patent);
         return patent;
     }
-    internal void GiveRightForPatent(Patent patent, Client payerClient) {    
+    public void GiveRightForPatent(Patent patent, Client payerClient) {    
         patent.members.Add(payerClient);
         payerClient.membershipPatents.Add(patent);
     }
-    private bool ExtendPatent(Patent patent) {
-        if (patent.IsExtendPossible()) return false;
+    public bool ExtendPatent(Patent patent) {
+        if (!patent.IsExtendPossible()) return false;
         patent.ExtendPatent();
         patent.application.client.notificationList.Add(patent.application.inventionName + " был продлён");        
 

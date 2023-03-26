@@ -11,11 +11,11 @@ public class Check
     private Func<Patent, Patent>? callbackPatentSend;
     private Action<Patent, Client>? callbackMembership;
     private Func<Patent, bool>? callbackPatentExtension;
-    private Application? application;
-    private Patent? patent;
+    public Application? application;
+    public Patent? patent;
     public CheckStatus status { get; private set; }
     public CheckType checkType { get; private set; }          
-    internal Check(Client payer, Rospatent sender,
+    public Check(Client payer, Rospatent sender,
                    CheckType checkType, uint summ, Application application, Func<Application, bool> callbackApplication)
     {
         this.payerClient = payer;
@@ -28,7 +28,7 @@ public class Check
         status = CheckStatus.PendingPayment;
         this.callbackApplication = callbackApplication;
     }
-    internal Check(Client payer, Rospatent sender,
+    public Check(Client payer, Rospatent sender,
                    CheckType checkType, uint summ, Patent patent, Func<Patent, Patent> callbackPatentSend)
     {
         this.payerClient = payer;
@@ -41,7 +41,7 @@ public class Check
         status = CheckStatus.PendingPayment;
         this.callbackPatentSend = callbackPatentSend;
     }    
-    internal Check(Client payer, Client sender,
+    public Check(Client payer, Client sender,
                    CheckType checkType, uint summ, Patent patent, Action<Patent, Client> callbackMembership)
     {
         this.payerClient = payer;
@@ -54,7 +54,7 @@ public class Check
         status = CheckStatus.PendingPayment;
         this.callbackMembership = callbackMembership;
     }    
-    internal Check(Client payer, Rospatent sender,
+    public Check(Client payer, Rospatent sender,
                    CheckType checkType, uint summ, Patent patent, Func<Patent, bool> callbackPatentExtension)
     {
         this.payerClient = payer;
@@ -74,6 +74,8 @@ public class Check
         if ((checkType == CheckType.RegistrationFee || checkType == CheckType.FirstExpertiseFee ||
                 checkType == CheckType.SecondExpertiseFee) && callbackApplication != null && application != null)
         {
+            if (application.status == ApplicationStatus.AwaitFirstExpertisePayment) application.status = ApplicationStatus.AwaitFirstExpertise;            
+            if (application.status == ApplicationStatus.AwaitSecondExpertisePayment) application.status = ApplicationStatus.AwaitSecondExpertise;            
             callbackApplication(application);
             return true;
         }

@@ -1,7 +1,7 @@
 namespace PatentPO;
 public partial class Application
 {
-    internal class Expertise
+    public class Expertise
     {
         public Expert? firstExpert { get; set; }
         public List<Expert>? secondExperts { get; set; }

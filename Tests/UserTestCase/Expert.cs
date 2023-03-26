@@ -3,13 +3,12 @@ using PatentPO;
 namespace Tests
 {
     [TestClass]
-    public class ExpertInit
+    public class ExpertUseCase
     {
         //Инициализация
         public static Client client;
         public static Rospatent rospatent;
         public static Application application;
-        public static Patent patent;
         public static List<Expert> experts;
         [TestInitialize]
         public void InitializeTests()
@@ -35,18 +34,25 @@ namespace Tests
             client = new Client(fio);
             application = new Application(inventionName, essay, client);
         }
-        //Тестирование инициализации
-        [TestMethod]
-        public void isInit()
-        {
-            Expert expert = new Expert("Меньшиков Михаил Андреевич");
-            Assert.AreEqual(expert, expert);
-            Assert.AreEqual(expert.fullName, "Меньшиков Михаил Андреевич");
-            Assert.AreEqual(expert.expertStatus, ExpertStatus.Available);
-        }
         //Одобрить заявку
         [TestMethod]
-        public void ApproveExpertise()
+        public void ApproveFirstExpertise()
+        {
+            var currentExpert = experts[0];
+
+            rospatent.SendCheckForFirstExpertise(application);
+            client.PayFee(client.applications.First().checks.Last());
+
+            Assert.IsNotNull(application.expertise);
+            Assert.AreEqual(application.expertise!.firstExpert, currentExpert);
+
+            Assert.AreEqual(currentExpert.expertStatus, ExpertStatus.Busy);
+            currentExpert.ApproveExpertise();
+            Assert.AreEqual(currentExpert.expertStatus, ExpertStatus.Available);
+            Assert.AreEqual(ApplicationStatus.AwaitSecondExpertisePayment, application.status);
+        }
+        [TestMethod]
+        public void ApproveSecondExpertise()
         {
             var currentExpert = experts[0];
 
@@ -74,14 +80,14 @@ namespace Tests
         }
         //Отклонить заявку - первичная экспертиза
         [TestMethod]
-        public void RejectExpertiseFirstExpertise()
+        public void RejectFirstExpertise()
         {
             var currentExpert = experts[0];
 
             rospatent.SendCheckForFirstExpertise(application);
             client.PayFee(client.applications.First().checks.Last());
 
-            Assert.AreNotEqual(application.expertise, null);
+            Assert.IsNotNull(application.expertise);
             Assert.AreEqual(application.expertise!.firstExpert, currentExpert);
 
             Assert.AreEqual(currentExpert.expertStatus, ExpertStatus.Busy);

@@ -22,9 +22,9 @@ Rospantent->Check: <<create>>
 activate Check
 Rospantent<--Check: check
 Application<--Rospantent: application.checks.add(check)
+deactivate Rospantent
 Client<-Application: application
 activate Client
-deactivate Rospantent
 
 Client -> Check: PayFee(application.check)
 deactivate Client
@@ -40,10 +40,10 @@ Rospantent->Check: <<create>>
 activate Check
 Rospantent<--Check: check
 Application<--Rospantent: application.checks.add(check)
+deactivate Rospantent
+deactivate Rospantent
 Client<-Application: application
 activate Client
-deactivate Rospantent
-deactivate  Rospantent
 
 Client -> Check: PayFee(application.check)
 deactivate Client
@@ -79,10 +79,10 @@ Rospantent->Check: <<create>>
 activate Check
 Rospantent<--Check: check
 Application<--Rospantent: application.checks.add(check)
+deactivate Rospantent
+deactivate Rospantent
 Client<-Application: application
 activate Client
-deactivate Rospantent
-deactivate  Rospantent
 
 Client -> Check: PayFee(application.check)
 deactivate Client
@@ -101,13 +101,13 @@ alt Есть свободные эксперты
     alt Все эксперты одобрили
         Expert->Expert: ApproveExpertise()
         activate Expert
-        Expert->Rospantent: CreatePatent(application) 
+        Expert->Rospantent: CreatePatent(application)
+        deactivate Expert 
         activate Rospantent       
         Patent<-Rospantent: <<create>>
         activate Patent
         Patent-->Rospantent: patent
         deactivate Rospantent
-        deactivate Expert
     else Не все эксперты одобрили - break
         Expert->Expert: RejectExpertise()
         activate Expert
@@ -127,6 +127,9 @@ Rospantent->Check: <<create>>
 activate Check
 Rospantent<--Check: check
 Patent<--Rospantent: rospatent.checks.add(check)
+deactivate Rospantent
+deactivate Rospantent
+deactivate Rospantent
 Client<-Patent: patent
 activate Client
 deactivate Rospantent

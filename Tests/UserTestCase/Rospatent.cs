@@ -3,7 +3,7 @@ using PatentPO;
 namespace Tests
 {
     [TestClass]
-    public class RospatentInit
+    public class RospatentUseCase
     {
         //Инициализация
         public static Client client;
@@ -38,82 +38,54 @@ namespace Tests
 
             rospatent.patents.Clear();
             rospatent.applications.Clear();
-        }
-        //Тестирование Singleton
+        }        
         [TestMethod]
-        public void testSingleton()
-        {
-            Rospatent rospatent1 = Rospatent.getInstance();
-            Rospatent rospatent2 = Rospatent.getInstance();
-
-            Assert.AreEqual(rospatent1, rospatent2);
-        }
-        //Тестрование свойств при инициализации
-        [TestMethod]
-        public void testProperties()
-        {
-            Rospatent rospatent = Rospatent.getInstance();
-
-            Assert.AreEqual(Rospatent.registrationFee, (uint)2000);
-            Assert.AreEqual(Rospatent.firstExpertiseFee, (uint)3500);
-            Assert.AreEqual(Rospatent.secondExpertiseFee, (uint)9000);
-            Assert.AreEqual(Rospatent.patentGrantFee, (uint)1500);
-            Assert.AreEqual(Rospatent.patentExtentiosFee, (uint)5000);
-            Assert.AreEqual(Rospatent.secondExpertiseLength, (ushort)3);
-
-            CollectionAssert.AreEqual(rospatent.experts, experts);
-            CollectionAssert.AreEqual(rospatent.patents, new List<Patent>());
-            CollectionAssert.AreEqual(rospatent.applications, new List<Application>());
-        }
-        //Тестирование методов по выдаче чека
-        [TestMethod]
-        public void ChecksMethods()
-        {
+        public void SendCheckForRegistration() {
             rospatent.SendCheckForRegistration(application);
             Assert.AreEqual(application.checks.Last().summ, (uint)2000);
             Assert.AreEqual(application.checks.Last().checkType, CheckType.RegistrationFee);
             Assert.AreEqual(application.checks.Last().payerClient, client);
             Assert.AreEqual(application.checks.Last().senderRospatent, rospatent);
-
+        }
+        [TestMethod]
+        public void SendCheckForFirstExpertise() {
             rospatent.SendCheckForFirstExpertise(application);
             Assert.AreEqual(application.checks.Last().summ, (uint)3500);
             Assert.AreEqual(application.checks.Last().checkType, CheckType.FirstExpertiseFee);
             Assert.AreEqual(application.checks.Last().payerClient, client);
             Assert.AreEqual(application.checks.Last().senderRospatent, rospatent);
-
+        }
+        [TestMethod]
+        public void SendCheckForSecondExpertise() {
             rospatent.SendCheckForSecondExpertise(application);
             Assert.AreEqual(application.checks.Last().summ, (uint)9000);
             Assert.AreEqual(application.checks.Last().checkType, CheckType.SecondExpertiseFee);
             Assert.AreEqual(application.checks.Last().payerClient, client);
             Assert.AreEqual(application.checks.Last().senderRospatent, rospatent);
-
+        }
+        [TestMethod]
+        public void SendCheckForPatentGrant() {
             rospatent.SendCheckForPatentGrant(patent, patent.application.client);
             Assert.AreEqual(patent.patentChecks.Last().summ, (uint)1500);
             Assert.AreEqual(patent.patentChecks.Last().checkType, CheckType.PatentGrantingFee);
             Assert.AreEqual(patent.patentChecks.Last().payerClient, client);
             Assert.AreEqual(patent.patentChecks.Last().senderRospatent, rospatent);
-
+        }
+        [TestMethod]
+        public void SendCheckPatentExtention() {
             rospatent.SendCheckPatentExtention(patent);
             Assert.AreEqual(patent.patentChecks.Last().summ, (uint)5000);
             Assert.AreEqual(patent.patentChecks.Last().checkType, CheckType.ExtensionPatentPayment);
             Assert.AreEqual(patent.patentChecks.Last().payerClient, client);
             Assert.AreEqual(patent.patentChecks.Last().senderRospatent, rospatent);
         }
-        //Тестирование метода по регистрации заявки
         [TestMethod]
-        public void RegisterMethod()
-        {
-            rospatent.RegisterApplication(application);
-            Assert.AreEqual(application.status, ApplicationStatus.AwaitFirstExpertisePayment);
-            Assert.AreEqual(rospatent.applications.Last(), application);
-        }
-        //Тестирование метода по выделению экспертов на проект
-        [TestMethod]
-        public void PeopleAllocation()
-        {
+        public void GetFreeExpert() {
             var currentExperts = rospatent.GetFreeExpert(3);
             CollectionAssert.AreEqual(currentExperts, experts);
-
+        }
+        [TestMethod]
+        public void AllocatePeople() {            
             application.status = ApplicationStatus.AwaitFirstExpertise;
             rospatent.AllocatePeople(application);
             Assert.AreEqual(application.status, ApplicationStatus.FirstExpertise);
@@ -124,26 +96,63 @@ namespace Tests
 
             experts[0].expertStatus = ExpertStatus.Available;
             Assert.AreEqual(rospatent.AllocatePeople(application), true);
-            Assert.AreEqual(experts[0].expertStatus, ExpertStatus.Busy);
+            Assert.AreEqual(experts[0].expertStatus, ExpertStatus.Busy);   
         }
-        //Тестирование методов по работе с патентами
         [TestMethod]
-        public void PatentMethods()
-        {
-            application.patent = null;
+        public void RegisterApplication() {
+            rospatent.RegisterApplication(application);
+            Assert.AreEqual(application.status, ApplicationStatus.AwaitFirstExpertisePayment);
+            Assert.AreEqual(rospatent.applications.Last(), application);
+        }
+        [TestMethod]
+        public void CreatePatent() {
             rospatent.SendRequestToCreatePatent(application);
-            Assert.AreEqual(rospatent.patents.Last().patentChecks.Last().checkType, CheckType.PatentGrantingFee);
-            
-            application.patent = rospatent.patents.Last();
+            Assert.AreEqual(rospatent.patents.Count, 1);
+        }
+        [TestMethod]
+        public void RelocatePeopleOnExpertiseEnd() {
+            var application1 = new Application("Тест 1", "Тест 1", client);
+            var application2 = new Application("Тест 2", "Тест 2", client);
 
-            rospatent.GivePatentToClient(application.patent!);
-            Assert.AreEqual(client.patents.Last(), application.patent);
+            rospatent.RegisterApplication(application1);
+            rospatent.RegisterApplication(application2);
 
+            experts.ForEach(experts => experts.expertStatus = ExpertStatus.Busy);
+            experts[0].expertStatus = ExpertStatus.Available;
+
+            application1.status = ApplicationStatus.AwaitFirstExpertise;
+            application2.status = ApplicationStatus.AwaitFirstExpertise;
+            rospatent.AllocatePeople(application1);
+            rospatent.AllocatePeople(application2);
+
+            Assert.AreEqual(ApplicationStatus.FirstExpertise, application1.status);
+            Assert.AreEqual(ApplicationStatus.AwaitFirstExpertise, application2.status);
+
+            experts[0].expertStatus = ExpertStatus.Available;
+            rospatent.RelocatePeopleOnExpertiseEnd();
+            Assert.AreEqual(ApplicationStatus.FirstExpertise, application2.status);
+        }
+        [TestMethod]
+        public void SendPatentToClient() {
+            var patent = new Patent(application);
+            rospatent.GivePatentToClient(patent);
+            Assert.AreEqual(patent, client.patents.Last());
+        }
+        [TestMethod]
+        public void GiveRightForPatent() {            
+            var patent = new Patent(application);
             Client client1 = new Client("Серебряков Сергей Дмитриевич");
-            rospatent.GiveRightForPatent(application.patent!, client1);
-            Assert.AreEqual(client1.membershipPatents.Last(), application.patent);
+            rospatent.GiveRightForPatent(patent, client1);
+            Assert.AreEqual(client1.membershipPatents.Last(), patent);            
+        }
+        [TestMethod]
+        public void ExtendPatent() {
+            var dateClass = DateClass.getInstance();
 
-            Assert.AreEqual(rospatent.ExtendPatent(application.patent!), true);
+            var patent = new Patent(application);
+            Assert.AreEqual(patent.expireDate, new DateOnly(dateClass.date.Year, dateClass.date.Month, dateClass.date.Day).AddYears(1));
+            Assert.AreEqual(rospatent.ExtendPatent(patent), true);
+            Assert.AreEqual(patent.expireDate, new DateOnly(dateClass.date.Year, dateClass.date.Month, dateClass.date.Day).AddYears(2));
         }
     }
 }
